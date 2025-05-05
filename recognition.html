@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hand Sign Recognition</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <h1>Hand Sign Recognition</h1>
+
+  <!-- Flex container with video and text side-by-side -->
+  <div class="content-wrapper">
+    <!-- Video Container -->
+    <div class="video-container">
+      <img id="camera-feed" src="/static/camera1.png" alt="Camera Feed Placeholder">
+      <div id="loader" class="loader" style="display: none;"></div>
+    </div>
+
+    <!-- Text Output -->
+    <div class="text-output">
+      <h2>Recognized Text</h2>
+      <div id="recognized-text">No sign detected yet.</div>
+
+      <p class="history-title">Recognized History</p>
+<div id="recognized-history"></div>
+      <button onclick="resetHistory()">Clear Text</button>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="button-container">
+    <button onclick="sendAction('start')">Start</button>
+    <button onclick="sendAction('stop')">Stop</button>
+  </div>
+
+  <!-- Script -->
+  <script>
+    function sendAction(action) {
+      const img = document.getElementById('camera-feed');
+      const loader = document.getElementById('loader');
+
+      img.classList.add('fade-out');
+      loader.style.display = 'block';
+
+      setTimeout(() => {
+        fetch(`/${action}`, { method: 'POST' })
+          .then(response => {
+            if (action === 'start') {
+              img.src = '/video_feed';
+            } else if (action === 'stop') {
+              img.src = '/static/camera2.png';
+            }
+
+            img.onload = () => {
+              loader.style.display = 'none';
+              img.classList.remove('fade-out');
+            };
+          });
+      }, 300);
+    }
+
+    function updateRecognizedText(text) {
+      document.getElementById("recognized-text").textContent = text;
+    }
+
+    function updateRecognizedHistory(history) {
+      document.getElementById("recognized-history").textContent = history;
+    }
+
+    function pollForUpdates() {
+      fetch('/get_prediction')
+        .then(response => response.json())
+        .then(data => updateRecognizedText(data.text))
+        .catch(console.error);
+
+      fetch('/get_history')
+        .then(response => response.json())
+        .then(data => updateRecognizedHistory(data.history))
+        .catch(console.error);
+
+      setTimeout(pollForUpdates, 1000);
+    }
+
+    function resetHistory() {
+      fetch('/reset_history', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.status);
+          updateRecognizedHistory(""); // Clear on frontend
+        })
+        .catch(console.error);
+    }
+
+    pollForUpdates();
+  </script>
+
+</body>
+</html>

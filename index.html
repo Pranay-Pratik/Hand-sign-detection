@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home-body">
+  <div class="home-container">
+    <h1>Welcome to the Hand Sign Recognition App</h1>
+    <p>Click below to start detecting hand signs!</p>
+    <a href="{{ url_for('recognition') }}" class="start-button">Go to Recognition</a>
+  </div>
+</body>
+</html>
